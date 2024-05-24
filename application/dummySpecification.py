@@ -1,4 +1,4 @@
-from automaton import FSM, State, Transition
+from application.automaton import FSM, State, Transition
 
 
 class DummySpecification():
@@ -15,16 +15,16 @@ class DummySpecification():
         state_start_music = State('start music')
 
         state_start.addTransitions(
-            Transition("give 0 for starting music and 1 for stopping music", state_wait, True),
-            Transition(None, state_wait, False)
+            Transition("give 0 for starting music and 1 for stopping music", state_wait, False)
         )
         state_wait.addTransitions(
             Transition("0", state_start_music, True),
             Transition("1", state_stop_music, True),
-            Transition("None", state_timeout, False),
+            Transition(None, state_timeout, False),
             Transition("f", state_finish, False)
         )
         return [state_start, state_wait, state_stop_music, state_start_music,state_finish,state_timeout]
 
 
 c = DummySpecification()
+c.fsm.showFsm()

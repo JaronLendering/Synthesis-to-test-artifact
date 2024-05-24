@@ -1,23 +1,28 @@
-class Strategy:
-    def __init__(self, name):
-        self.name = name
-        self.children = []
+from application.automaton import State, Transition
 
-    def add_child(self, child, transition):
-        self.children.append((child, transition))
+
+class StrategyTransition:
+    def __init__(self,starting_state: State, end_state: State, input_value, output_value):
+        self.starting_state = starting_state
+        self.end_state = end_state
+        self.input_value = input_value
+        self.output_value = output_value
+
+class Strategy:
+    def __init__(self, goal_state: State):
+        self.transitions: {} = {} # (starting_state, input)
+        self.goal_state = goal_state
+
+    def add_transitions(self, state, input):
+        self.transitions.update({state: input})
 
     def repr_as_image(self):
         pass
     def __repr__(self, level=0):
-        rep = ("  " * level + self.name + "\n")
-        for child, line_name,isInput in self.children:
-            rep +=("  " * (level + 1) + f"---{line_name}{'!' if isInput else '0'}---\n")
-            rep += child.__repr__(level + 2)
-        return rep
+        ret = ""
+        for key in self.transitions.keys():
+            ret += f"{key}: {self.transitions[key]}\n"
+        return ret
 
-    def process_input(self, transition_value):
-        for child,transition in self.children:
-            if (transition == transition_value): #TODO: make it check if a transition is in a message or is the message
-                print(f"Transition: {self} --({transition_value})--> {child}")
-                return child
-        raise Exception(f"No valid transition for input '{transition_value}' in node '{self}'.")
+    def return_input(self, state: State):
+        return self.transitions.get(state)

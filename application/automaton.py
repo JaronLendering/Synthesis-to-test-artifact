@@ -3,14 +3,13 @@ import matplotlib.pyplot as plt
 from networkx.drawing.nx_agraph import graphviz_layout
 
 class Transition:
-    def __init__(self, input_value, end_state, isInput, part_of: bool = False):
+    def __init__(self, input_value, end_state, isInput):
         self.input_value = input_value
         self.end_state = end_state
-        self.part_of = part_of
         self.isInput = isInput
 
     def copy(self):
-        return Transition(self.input_value, self.end_state, self.isInput, self.part_of)
+        return Transition(self.input_value, self.end_state, self.isInput)
 
     def __repr__(self):
         return f"({self.input_value if self.input_value is not None else 'None' } {'?' if self.isInput else '!'})--> {self.end_state}"
@@ -20,7 +19,7 @@ class State:
         self.name = name
         self.input_transitions: [Transition] = []
         self.output_transitions: [Transition] = []
-        self.score = None
+        self.score = 0
 
 
     def addTransition(self, transition: Transition):
@@ -28,6 +27,9 @@ class State:
             self.input_transitions.append(transition)
         else:
             self.output_transitions.append(transition)
+
+    def is_terminal(self):
+        return self.input_transitions == [] and self.output_transitions == []
 
     def getTransitions(self):
         transitions = []
@@ -51,14 +53,18 @@ class FSM:
     def __init__(self, states: [State], initial_state: State):
         self.states = states
         self.current_state = initial_state
+        self.initial_state = initial_state
+
 
     def process_data(self, input_value,is_input):
-        for transition in self.current_state.input_transitions if is_input else self.current_state.output_transitions:
-            if (transition.input_value == input_value): #TODO: make it check if a transition is in a message or is the message
-                print(f"Transition: {self.current_state} --({input_value})--> {transition.end_state}")
-                self.current_state = transition.end_state
-                return True
-        raise Exception(f"No valid transition for input '{input_value}' in state '{self.current_state}'.")
+        self.current_state = self.process_data_from_state(self.current_state,input_value,is_input)
+
+    def process_data_from_state(self, state:State, input_value,is_input):
+        for transition in state.input_transitions if is_input else state.output_transitions:
+            if transition.input_value == input_value:
+                #print(f"Transition: {state} --({input_value})--> {transition.end_state}")
+                return transition.end_state
+        raise Exception(f"No valid transition for input '{input_value}' in state '{state}'.")
 
     def better_show_fsm(self):
         fsm = nx.DiGraph()
