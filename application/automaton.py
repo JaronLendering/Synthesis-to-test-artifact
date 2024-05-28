@@ -2,6 +2,9 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.drawing.nx_agraph import graphviz_layout
 
+from application.specification_exception import SpecificationException
+
+
 class Transition:
     def __init__(self, input_value, end_state, isInput):
         self.input_value = input_value
@@ -64,7 +67,7 @@ class FSM:
             if transition.input_value == input_value:
                 #print(f"Transition: {state} --({input_value})--> {transition.end_state}")
                 return transition.end_state
-        raise Exception(f"No valid transition for input '{input_value}' in state '{state}'.")
+        raise SpecificationException(f"No valid transition for {'input' if is_input else 'output'} '{input_value}' in state '{state}'.")
 
     def better_show_fsm(self):
         fsm = nx.DiGraph()
@@ -96,7 +99,7 @@ class FSM:
         plt.show()
     def showFsm(self):
         fsm = nx.DiGraph()
-        node_size = 2000
+        node_size = 3000
 
         for state in self.states:
             for transition in state.getTransitions():
@@ -110,8 +113,7 @@ class FSM:
                 else:
                     fsm.add_edge(state,transition.end_state,label = transition.input_value,connectionstyle='arc3,rad=0', is_input = transition.isInput)
 
-        layout = nx.circular_layout(fsm)
-
+        layout = nx.spring_layout(fsm,k=1000)
         nx.draw_networkx_nodes(fsm, layout,node_size=node_size,node_color = ["red" if i == self.states.index(self.current_state) else "gray" for i in range(len(self.states))])
         nx.draw_networkx_labels(fsm, layout)
         for edge in fsm.edges():
@@ -128,6 +130,7 @@ class FSM:
             nx.draw_networkx_edge_labels(fsm,layout,edge_labels= edge_labels,connectionstyle=fsm.get_edge_data(edge[0], edge[1])['connectionstyle'])
         plt.axis('off')
         plt.tight_layout()
+        plt.figure(figsize=(100, 100))
         plt.show()
 
     def __repr__(self):

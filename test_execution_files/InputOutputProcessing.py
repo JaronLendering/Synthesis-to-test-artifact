@@ -11,53 +11,35 @@ from application.automaton import Transition
 class InputOutputProcessing:
 
     def __init__(self):
-        self._input_queue_ = []
-        self._input_condition_ = None
-        self._terminate_cmd_monitoring_event = threading.Event()
-        self._cmd_monitoring_thread= None
-        self.normal_stdin = sys.stdin
+        self._input_queue_ = multiprocessing.Queue()
+        self._output_queue_ = multiprocessing.Queue()
+        self.input_process_lock = multiprocessing.Lock()
 
-    def cmd_set_input_mock(self):
-        sys.stdin = io.StringIO()
+    def input_emulator(self,input):
+        str_input = str(input)
+        self._input_queue_.put(str_input)
 
-    def cmd_reset_input_mock(self):
-        sys.stdin = self.normal_stdin
-    def cmd_input_emulator(self,input):
-        sys.stdin.write(str(input))
-    def start_cmd_monitoring(self):
-        self._input_condition_ = threading.Condition()
-        self._cmd_monitoring_thread = threading.Thread(target=self.__cmd_monitoring__,daemon=True)
-
-    def stop_cmd_monitoring(self):
-        if self._cmd_monitoring_thread is not None:
-            self._terminate_cmd_monitoring_event.set()
-            self._cmd_monitoring_thread.join()
-            self._terminate_cmd_monitoring_event.clear()
-        self._input_condition_ = None
-    def __cmd_monitoring__(self):
-        while not self._terminate_cmd_monitoring_event.is_set():
-            if(sys.stdin.tell() < sys.stdin.seek(0,os.SEEK_END)):
-                line = sys.stdin.readline().strip()
-                with self._input_condition_:
-                    self._input_queue_.append(line)
-                    self._input_condition_.notify_all()
-
-    def start_input_output_monitoring(self):
-        self.start_cmd_monitoring()
-        self.cmd_set_input_mock()
-
-    def stop_input_output_monitoring(self):
-        self.stop_cmd_monitoring()
-        self.cmd_reset_input_mock()
     def input_dequeue(self):
-        if self._input_condition_ is None:
+        if self._input_queue_ is None:
             raise Exception("Input reading has not been started")
-        with self._input_condition_:
-            if self._input_queue_ == []:
-                self._input_condition_.wait()
-        input = self._input_queue_[0]
-        self._input_queue_.remove(input)
-        return input
+        self.input_process_lock.acquire()
+        user_input = self._input_queue_.get()
+        print(user_input + "?")
+        self.input_process_lock.release()
+        return user_input
+    def output_emulator(self, text):
+        self.input_process_lock.acquire()
+        self._output_queue_.put(str(text))
+        print(str(text) + "!")
+        self.input_process_lock.release()
+    def output_dequeue(self):
+        if self._input_queue_ is None:
+            raise Exception("Ouput reading has not been started")
+        return self._output_queue_.get()
+
+    def empty_queues(self):
+        self._input_queue_ = multiprocessing.Queue()
+        self._output_queue_ = multiprocessing.Queue()
 
 def output_eager_assumpion_procesing(input_transition: Transition, output_transition: Transition) -> Transition:
     if output_transition.input_value == str(None) and input_transition.input_value is not None:
