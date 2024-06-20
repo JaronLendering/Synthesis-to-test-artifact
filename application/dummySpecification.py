@@ -1,3 +1,5 @@
+from pyvis.network import Network
+
 from application.automaton import FSM, State, Transition
 
 
@@ -41,7 +43,7 @@ class DummySpecification():
         state_wait.addTransitions(
             Transition("0", state_start_music, True),
             Transition("1", state_stop_music, True),
-            Transition('None', state_timeout, False),
+            Transition("None", state_timeout, False),
             Transition("f", state_finish, False),
 
         )
@@ -61,4 +63,5 @@ class DummySpecification():
 
 if __name__ == "__main__":
     c = DummySpecification()
+    c.fsm.states[2].is_winning = True
     c.fsm.showFsm()

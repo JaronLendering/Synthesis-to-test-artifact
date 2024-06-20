@@ -42,7 +42,7 @@ class InputOutputProcessing:
         self._output_queue_ = multiprocessing.Queue()
 
 def output_eager_assumpion_procesing(input_transition: Transition, output_transition: Transition) -> Transition:
-    if output_transition.input_value == str(None) and input_transition.input_value is not None:
+    if output_transition.input_value == "None" and input_transition.input_value != "None":
         return input_transition
     else:
         return output_transition
