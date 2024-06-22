@@ -35,28 +35,33 @@ class GoodApplication(AbstractApplication):
             pass
         elif user_input == "loop":
             while True:
-                user_input, output = self.do_IO_actions(lambda: None if random.random() < 0.1 else 'L1', True)
+                user_input, output = self.do_IO_actions(lambda: None if random.random() < 0.4 else 'L1', True)
                 if output == 'L1':
                     self.do_IO_actions(lambda: "L1 back")
                 elif output == None:
                     if user_input == 'L2':
                         self.do_IO_actions(lambda: "L2 back")
-
+        elif user_input == "side loop":
+            while True:
+                user_input, output = self.do_IO_actions(lambda: None, True)
+                if user_input == 'L1':
+                    self.do_IO_actions(lambda: "L1 back")
+                elif user_input == 'L2':
+                    self.do_IO_actions(lambda: "L2 back")
 
 
     def choice(self,dept, max_dept, choice_num):
         if dept < max_dept:
             user_input, program_output = self.do_IO_actions(lambda : "None")#self.do_IO_actions(lambda:random.choice([f"next{choice_num}2",f"next{choice_num}3",f"next{choice_num}4", "None"]))
 
-            if( program_output == f"next{choice_num}2" or program_output == f"next{choice_num}3" or program_output == f"next{choice_num}4" ):
-                self.choice(dept+1,max_dept,program_output[4:])
-                return
-            elif(program_output == "None"):
-                if user_input == f"next{choice_num}0" or user_input == f"next{choice_num}1":
+            # if( program_output == f"next{choice_num}2" or program_output == f"next{choice_num}3" or program_output == f"next{choice_num}4" ):
+            #     self.choice(dept+1,max_dept,program_output[4:])
+            #     return
+            if(program_output == "None"):
+                if user_input == f"next{choice_num}0" or user_input == f"next{choice_num}1" or user_input == f"next{choice_num}2" or user_input == f"next{choice_num}3" or user_input == f"next{choice_num}4":
                     self.choice(dept+1, max_dept, user_input[4:])
                     return
-
-            exit()
+        exit()
 
 
 

@@ -7,7 +7,7 @@ class AbstractApplication(ABC):
         self.read_input = None
         self.print_ouput = None
 
-    def set_read_input(self, read_input: Callable[[], str]):
+    def set_read_input(self, read_input: Callable[[], str] = None):
         self.read_input = read_input
 
     def set_print_output(self, print_output: Callable[[str], None]):

@@ -2,27 +2,41 @@
 from application.automaton import FSM, Transition, State
 from application.dummySpecification import DummySpecification
 from application.goodSpecification import GoodSpecification
-from strategy_synthesize_techniques.mctsTree import MctsTree
+from strategy_synthesize_techniques.mctsTree import MctsTree, ActionChooserEnum
 from strategy_synthesize_techniques.biStrategy import BiStrategy
 from strategy_synthesize_techniques.strategy import Strategy
+from strategy_synthesize_techniques.strategySynthesizerEnum import StrategySynthesizerChooser
 from test_execution_files.InputOutputProcessing import assumption_processing_transition
 
 
 class StrategySynthesiser():
-    def __init__(self,specification: FSM, name: str):
+    def __init__(self,specification: FSM, name: StrategySynthesizerChooser):
         self.specification_automaton = specification
         self.strategy_synthesizer = self.get_synthesizer(name)
-
+        self.synthesizer_kind = name
+        self.iteration_count = 30
+        self.max_select_recursion = 50
+        self.max_rollout_recursion = 12
+        self.action_chooser = ActionChooserEnum.RANDOM
 
     def get_synthesizer(self, name):
+        self.synthesizer_kind = name
         match name:
-            case 'BI':
+            case StrategySynthesizerChooser.BI:
                 return self.bi_strategy_synthesize_all
-            case 'SM-MCTS':
+            case StrategySynthesizerChooser.SM_MCST:
                 return self.SM_MCTS_strategy_synthesize_all
             case _:
                 raise Exception(f"{name} is not a strategy synthesize technique")
 
+
+    def set_MCTS_configuration_values(self,iteration_count = None,max_select_recursion = None,max_rollout_recursion = None):
+        if iteration_count is not None:
+            self.iteration_count = iteration_count
+        if max_select_recursion is not None:
+            self.max_select_recursion = max_select_recursion
+        if max_rollout_recursion is not None:
+            self.max_rollout_recursion = max_rollout_recursion
 
 
     def bi_strategy_synthesize_all(self) -> [Strategy]:
@@ -38,20 +52,20 @@ class StrategySynthesiser():
 
 
 
-    def SM_MCTS_strategy_synthesize_all(self,iteration_count = 30,max_select_recursion = 50, max_rollout_recursion = 12) -> [Strategy]:
+    def SM_MCTS_strategy_synthesize_all(self) -> [Strategy]:
         states = self.specification_automaton.states
         strategies = []
         for state in states:
             state.is_winning = True
-            strategy = MctsTree(state,self.specification_automaton.initial_state,None,self.specification_automaton)
-            for i in range(iteration_count):
-                self.SM_MCTS_strategy_synthesize(strategy,max_select_recursion,max_rollout_recursion)
+            strategy = MctsTree(state,self.specification_automaton.initial_state,None,self.specification_automaton,self.action_chooser)
+            for i in range(self.iteration_count):
+                self.SM_MCTS_strategy_synthesize(strategy,self.max_select_recursion)
             strategies.append(strategy)
             state.is_winning = False
         return strategies
 
 
-    def SM_MCTS_strategy_synthesize(self, strategy: MctsTree, select_recursion_left,max_rollout_recursion ):
+    def SM_MCTS_strategy_synthesize(self, strategy: MctsTree, select_recursion_left ):
 
         if strategy.state.is_winning or strategy.state.is_terminal():
             return strategy.state.get_score()
@@ -62,7 +76,8 @@ class StrategySynthesiser():
             new_state = self.specification_automaton.process_data_from_state(strategy.state, transition.input_value, transition.isInput)
             new_strategy = strategy.summon_child(new_state)
 
-            score = new_strategy.rollout(self.specification_automaton,max_rollout_recursion)
+            score = new_strategy.rollout(self.specification_automaton,self.max_rollout_recursion)
+
             new_strategy.increment_visited()
             new_strategy.increment_score(score)
             strategy.duct_update(test_action, tested_action,score)
@@ -71,9 +86,10 @@ class StrategySynthesiser():
         transition = assumption_processing_transition(test_action, tested_action)
         new_state = self.specification_automaton.process_data_from_state(strategy.state, transition.input_value,
                                                                          transition.isInput)
+
         new_strategy = strategy.summon_child(new_state)
 
-        score = self.SM_MCTS_strategy_synthesize(new_strategy,select_recursion_left-1,max_rollout_recursion) if select_recursion_left > 0 else 0
+        score = self.SM_MCTS_strategy_synthesize(new_strategy,select_recursion_left-1) if select_recursion_left > 0 else strategy.state.get_score()
         strategy.duct_update(test_action, tested_action, score)
 
         return score

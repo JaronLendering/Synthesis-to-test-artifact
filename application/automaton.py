@@ -3,11 +3,11 @@ import os
 from pyvis.network import Network
 
 from application.specification_exception import SpecificationException
+from application.stateTypes import StateTypes
 
 
 class Transition:
     def __init__(self, input_value, end_state, isInput):
-        self.end_state = None
         self.input_value = input_value
         self.end_state = end_state
         self.isInput = isInput
@@ -23,15 +23,16 @@ class StateGenerator:
         self.states = []
         self.state_count = 0
 
-    def add_state(self,name,color = None):
-        state = State(f"{name} - {self.state_count})", color)
+    def add_state(self,name,color = None, type = StateTypes.OTHER):
+        state = State(f"{name} - {self.state_count})", color, type)
         self.states.append(state)
         self.state_count += 1
         return state
 class State:
-    def __init__(self, name,color = None):
+    def __init__(self, name, color = None, type = StateTypes.OTHER,):
         self.name = name
         self.color = color
+        self.type = type
         self.input_transitions: [Transition] = [Transition("None", self,
                                                            True)]  # the input transition will always go to itself, because if you do nothing the output will always decide what will be done
         self.output_transitions: [Transition] = []
@@ -91,8 +92,6 @@ class FSM:
         net = Network(notebook=False, cdn_resources="remote",
                       bgcolor="#222222",
                       font_color="white",
-                      height="750px",
-                      width="100%",
                       directed=True
                       )
         net.force_atlas_2based(gravity=-273, central_gravity=0.015, spring_length=500)
@@ -108,7 +107,7 @@ class FSM:
                 net.add_edge(str(state), str(transition.end_state), label=label)
 
         net.set_edge_smooth("dynamic")
-
+        net.show_buttons()
         net.show(os.path.join("../data", "specification_graph.html"),notebook=False)
 
 

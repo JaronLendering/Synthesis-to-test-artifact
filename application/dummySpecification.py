@@ -1,12 +1,15 @@
 from pyvis.network import Network
 
 from application.automaton import FSM, State, Transition
+from application.specTypes import SpecTypes
 
 
 class DummySpecification():
     def __init__(self):
         states = self.create_states()
         self.fsm = FSM(states,states[0])
+        self.type = SpecTypes.DUMMY
+
 
     def create_states(self) -> [State]:
         state_zero = State('Total beginning')
