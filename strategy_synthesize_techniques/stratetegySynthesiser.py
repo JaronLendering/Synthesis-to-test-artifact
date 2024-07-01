@@ -78,8 +78,6 @@ class StrategySynthesiser():
 
             score = new_strategy.rollout(self.specification_automaton,self.max_rollout_recursion)
 
-            new_strategy.increment_visited()
-            new_strategy.increment_score(score)
             strategy.duct_update(test_action, tested_action,score)
             return score
         test_action, tested_action = strategy.duct_select()

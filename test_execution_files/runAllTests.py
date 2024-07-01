@@ -18,3 +18,5 @@ if __name__ == "__main__":
             arguments = [str(i),"--save_strategy","--better_MCTS"] #test index and if the strategy should be saved
             command = ["cmd", "/c", "start", "cmd", "/k", "python", os.path.join(os.path.dirname(os.path.abspath(__file__)), "specificationTests.py")] + arguments
             subprocess.Popen(command)
+
+    exit(808)

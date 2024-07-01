@@ -15,7 +15,7 @@ class GoodSpecification():
     def get_spec_fsm(self, initial_state: State, state_generator: [StateGenerator]):
         return FSM(state_generator.states,initial_state)
     def create_choices(self, state, dept, max_dept, choice_amount, current_states, state_generator, choice_number=""):
-        colors = ["purple","yellow","blue","green"]
+        colors = ["purple","brown","blue","green"]
         if dept < max_dept:
             state.addTransition(Transition("None", state,False))
             for i in range(choice_amount):
@@ -65,7 +65,7 @@ class GoodSpecification():
             state_side_loop.addTransitions(
                 Transition("L2", state_loop2, True),
                 Transition("L1", state_loop1, True),
-                Transition("None", state_middle_loop, False)
+                Transition("None", state_side_loop, True)
             )
             state_loop1.addTransitions(
                 Transition("L1 back", state_middle_loop, False)
@@ -109,7 +109,7 @@ class GoodSpecification():
 
 if __name__ == "__main__":
     c = GoodSpecification()
-    initial_state,state_generator = c.create_states(lines=True,loop=True)
+    initial_state,state_generator = c.create_states(choices=True)
     fsm = c.get_spec_fsm(initial_state, state_generator)
     #print(fsm.initial_state.getTransitions())
     fsm.showFsm()

@@ -29,8 +29,15 @@ class SpecificationTests(ABC):
     def create_path_in_data(self, path: str) -> str:
         return os.path.join(self._data_folder_, path)
 
-    def termination_bargraph(self, dictionary):
-        self.bargraph_dictionary(dictionary,f"{self.strategy_kind} Termination Factors","Termination Factors","Amount of Terminations","termination_factor",ApplicationEndTypes)
+    def add_termination_values(self, dictionary):
+        folder = "termination_factor"
+        self.bargraph_dictionary(dictionary,f"{self.strategy_kind} Termination Factors","Termination Factors","Amount of Terminations",folder, ApplicationEndTypes)
+        path = os.path.join(self.strategy_path, folder,"terminiation_values")
+        with open(path, "a") as text_file:
+            text_file.write(f"{inspect.currentframe().f_back.f_back.f_code.co_name}\n")
+            for key, value in dictionary.items():
+                text_file.write(f"\t {key}: {value}\n")
+
 
     def bargraph_dictionary(self,dictionary,title,category_label, value_label,folder,types_class):
         plt.figure(figsize=(14, 8))
@@ -52,6 +59,7 @@ class SpecificationTests(ABC):
             text_file.write(f"{inspect.currentframe().f_back.f_back.f_code.co_name}: {strategy_creation_time}\n")
 
     def add_win_rate_per_node_type(self, winning_strategies: [Strategy], strategies: [Strategy] ):
+        folder = "Win_Rates"
         type_exist_dict: {StateTypes,int} = {}
         type_win_dict: {StateTypes,float} = {}
         for winning_strategy in winning_strategies:
@@ -62,7 +70,13 @@ class SpecificationTests(ABC):
             type_exist_dict.update({strategy.goal_state.type: type_exist_dict.get(strategy.goal_state.type) + 1})
         for key in type_win_dict.keys():
             type_win_dict.update({key: type_win_dict.get(key)/ type_exist_dict.get(key)})
-        self.bargraph_dictionary(type_win_dict, f"{self.strategy_kind} Win Rate","Node Types","Win Amount","Win_Rates",StateTypes)
+        self.bargraph_dictionary(type_win_dict, f"{self.strategy_kind} Win Rate","Node Types","Win Amount",folder,StateTypes)
+
+        path = os.path.join(self.strategy_path, folder, "win_rates")
+        with open(path, "a") as text_file:
+            text_file.write(f"{inspect.currentframe().f_back.f_back.f_code.co_name}\n")
+            for key, value in type_win_dict.items():
+                text_file.write(f"\t {key}: {value}\n")
 
     def add_test_time(self, test_time):
         with open(os.path.join(self.strategy_path, "test_time"), "a") as text_file:
@@ -81,7 +95,7 @@ class SpecificationTests(ABC):
         self.add_win_rate_per_node_type(winning_strategies,strategies)
         self.add_test_time(test_time)
         self.extra_metrics(strategies)
-        self.termination_bargraph(terminating_factors)
+        self.add_termination_values(terminating_factors)
 
     @abstractmethod
     def extra_metrics(self, strategies):

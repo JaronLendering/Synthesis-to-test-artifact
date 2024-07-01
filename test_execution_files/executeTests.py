@@ -75,7 +75,7 @@ class ExecuteTests():
                 ApplicationEndTypes.TERMINAL)
 
 
-        if max_node_dept != None:
+        if max_node_dept != None: #was not necesarry in the end, was always kept as None
             if node_dept > max_node_dept:
                 return(f"Max node dept reached. Final state was {self.specification.current_state}",
                     ApplicationEndTypes.MAX_NODE_DEPT)

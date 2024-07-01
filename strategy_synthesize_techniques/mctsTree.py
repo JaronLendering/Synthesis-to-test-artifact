@@ -23,9 +23,7 @@ class MctsTree(Strategy):
         self.transposition_table.update({state:self})
         self.specification_automaton = specification_automaton
         self.state = state
-        self.score = 0
         self.action_score = {}
-        self.visit_count = 0
         self.visits_action_count = {}
         self.unchecked_transitions = self.couple_transitions(state.input_transitions,state.output_transitions)
         self.action_chooser_enum = action_chooser_enum
@@ -57,14 +55,6 @@ class MctsTree(Strategy):
         visit_count = self.visits_action_count.get(transition)
 
         return 0 if visit_count == 0 else self.action_score.get(transition)/visit_count
-    def increment_visited(self):
-        self.visit_count += 1
-        pass
-
-    def increment_score(self, score):
-        self.score += score
-        pass
-
     def return_input(self,state:State) -> str|None:
         if state == self.state:
             input_action_and_score = ([Transition(None, self.state, True)], None)
